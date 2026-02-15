@@ -40,7 +40,7 @@ public class PackageController {
 
     private final PackageService packageService;
 
-    @Operation(summary = "Create a package", description = "Creates a new package with the given name, description, and product IDs. Products are fetched from the external API and snapshotted (name, price in USD). Total is stored in USD.")
+    @Operation(operationId = "createPackage", summary = "Create a package", description = "Creates a new package with the given name, description, and product IDs. Products are fetched from the external API and snapshotted (name, price in USD). Total is stored in USD.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Package created", content = @Content(schema = @Schema(implementation = PackageResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Validation error (e.g. invalid or missing product IDs)"),
@@ -52,7 +52,7 @@ public class PackageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @Operation(summary = "Get package by ID", description = "Returns a single package with products. Total and each product price are converted to the requested currency.")
+    @Operation(operationId = "getPackageById", summary = "Get package by ID", description = "Returns a single package with products. Total and each product price are converted to the requested currency.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Package found", content = @Content(schema = @Schema(implementation = PackageResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "Package not found"),
@@ -66,7 +66,7 @@ public class PackageController {
         return ResponseEntity.ok(dto);
     }
 
-    @Operation(summary = "List packages (paginated)", description = "Returns a page of packages sorted by creation date (newest first). Totals are in the requested currency.")
+    @Operation(operationId = "getPackages", summary = "List packages (paginated)", description = "Returns a page of packages sorted by creation date (newest first). Totals are in the requested currency.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Page of packages", content = @Content(schema = @Schema(implementation = PageDto.class))),
             @ApiResponse(responseCode = "503", description = "Exchange rate service unavailable")
@@ -81,7 +81,7 @@ public class PackageController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "Update package", description = "Updates the package name and description only. Product list is immutable after creation.")
+    @Operation(operationId = "updatePackage", summary = "Update package", description = "Updates the package name and description only. Product list is immutable after creation.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Package updated", content = @Content(schema = @Schema(implementation = PackageResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Validation error"),
@@ -95,7 +95,7 @@ public class PackageController {
         return ResponseEntity.ok(dto);
     }
 
-    @Operation(summary = "Soft-delete package", description = "Marks the package as deleted. It no longer appears in list or get-by-id. Data is retained for audit.")
+    @Operation(operationId = "deletePackage", summary = "Soft-delete package", description = "Marks the package as deleted. It no longer appears in list or get-by-id. Data is retained for audit.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Package deleted"),
             @ApiResponse(responseCode = "404", description = "Package not found")

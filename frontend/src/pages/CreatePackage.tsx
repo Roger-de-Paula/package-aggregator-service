@@ -1,15 +1,15 @@
 import { useState, FormEvent, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createPackage, fetchProducts } from '../api/packageApi'
+import { createPackage, getProducts } from '../api'
 import { useCurrency } from '../contexts/CurrencyContext'
-import type { Product } from '../types/api'
+import type { ProductDto } from '../api'
 
 export default function CreatePackage() {
   const navigate = useNavigate()
   const { currency } = useCurrency()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<ProductDto[]>([])
   const [productsLoading, setProductsLoading] = useState(true)
   const [productsError, setProductsError] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -20,7 +20,7 @@ export default function CreatePackage() {
     let cancelled = false
     setProductsLoading(true)
     setProductsError(null)
-    fetchProducts(currency)
+    getProducts({ currency })
       .then((data) => {
         if (!cancelled) setProducts(data)
       })
@@ -53,7 +53,7 @@ export default function CreatePackage() {
     }
     setSubmitLoading(true)
     setSubmitError(null)
-    createPackage({ name, description, productIds })
+    createPackage({ name, description: description || undefined, productIds })
       .then(() => navigate('/'))
       .catch((err: { response?: { data?: { message?: string } }; message?: string }) =>
         setSubmitError(err.response?.data?.message ?? err.message ?? 'Failed to create package')
@@ -120,12 +120,12 @@ export default function CreatePackage() {
           {!productsLoading && !productsError && products.length > 0 && (
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {products.map((product) => {
-                const selected = selectedIds.has(product.id)
+                const selected = selectedIds.has(product.id ?? '')
                 return (
-                  <li key={product.id}>
+                  <li key={product.id ?? ''}>
                     <button
                       type="button"
-                      onClick={() => toggleProduct(product.id)}
+                      onClick={() => toggleProduct(product.id ?? '')}
                       className={`w-full text-left rounded-xl border-2 p-4 transition-all ${
                         selected
                           ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-500 shadow-sm'
@@ -134,8 +134,8 @@ export default function CreatePackage() {
                     >
                       <span className="block font-medium text-slate-900 dark:text-slate-100">{product.name}</span>
                       <span className="block mt-1 text-sm text-amber-600 dark:text-amber-400 font-medium">
-                        {(product.price ?? product.usdPrice) != null
-                          ? `${Number(product.price ?? product.usdPrice)} ${product.currency ?? 'USD'}`
+                        {product.price != null
+                          ? `${Number(product.price)} ${product.currency ?? 'USD'}`
                           : '—'}
                       </span>
                       {selected && (

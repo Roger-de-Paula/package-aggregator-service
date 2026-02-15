@@ -29,7 +29,7 @@ public class CurrencyController {
 
     private final ExchangeRateClient exchangeRateClient;
 
-    @Operation(summary = "List supported currencies", description = "Returns currencies supported for display (from Frankfurter). Optional search filters by currency code or full name (case-insensitive).")
+    @Operation(operationId = "getCurrencies", summary = "List supported currencies", description = "Returns currencies supported for display (from Frankfurter). Optional search filters by currency code or full name (case-insensitive).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of currency options (code and name)", content = @Content(schema = @Schema(implementation = CurrencyOptionDto.class))),
             @ApiResponse(responseCode = "503", description = "Frankfurter service unavailable")

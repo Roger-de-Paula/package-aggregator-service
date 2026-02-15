@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchPackages } from '../api/packageApi'
+import { getPackages } from '../api'
 import { useCurrency } from '../contexts/CurrencyContext'
-import type { PackageSummary } from '../types/api'
+import type { PackageSummaryDto } from '../api'
 
 export default function PackageList() {
   const { currency } = useCurrency()
-  const [packages, setPackages] = useState<PackageSummary[]>([])
+  const [packages, setPackages] = useState<PackageSummaryDto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
@@ -16,10 +16,10 @@ export default function PackageList() {
   useEffect(() => {
     setLoading(true)
     setError(null)
-    fetchPackages(page, size, currency)
+    getPackages({ page, size, currency })
       .then((data) => {
-        setPackages(data.content)
-        setTotalPages(data.totalPages)
+        setPackages(data.content ?? [])
+        setTotalPages(data.totalPages ?? 0)
       })
       .catch((err: { response?: { data?: { message?: string } }; message?: string }) =>
         setError(err.response?.data?.message ?? err.message ?? 'Failed to load')
@@ -61,11 +61,11 @@ export default function PackageList() {
           <ul className="space-y-3">
             {packages.map((pkg) => (
               <li
-                key={pkg.id}
+                key={pkg.id ?? ''}
                 className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
                 <Link
-                  to={`/packages/${pkg.id}`}
+                  to={`/packages/${pkg.id ?? ''}`}
                   className="block p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -82,7 +82,7 @@ export default function PackageList() {
                     </p>
                   )}
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">
-                    Created {new Date(pkg.createdAt).toLocaleString()}
+                    Created {pkg.createdAt ? new Date(pkg.createdAt).toLocaleString() : ''}
                   </p>
                 </Link>
               </li>

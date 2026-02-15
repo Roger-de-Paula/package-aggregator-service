@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { fetchPackageById } from '../api/packageApi'
+import { getPackageById } from '../api'
 import { useCurrency } from '../contexts/CurrencyContext'
-import type { PackageDetail as PackageDetailType } from '../types/api'
+import type { PackageResponseDto } from '../api'
 
 export default function PackageDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { currency } = useCurrency()
-  const [pkg, setPkg] = useState<PackageDetailType | null>(null)
+  const [pkg, setPkg] = useState<PackageResponseDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -17,7 +17,7 @@ export default function PackageDetail() {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetchPackageById(id, currency)
+    getPackageById(id, { currency })
       .then((data) => {
         if (!cancelled) setPkg(data)
       })
@@ -68,7 +68,7 @@ export default function PackageDetail() {
             Total: {pkg.totalPrice} {pkg.currency}
           </p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-500">
-            Created {new Date(pkg.createdAt).toLocaleString()}
+            Created {pkg.createdAt ? new Date(pkg.createdAt).toLocaleString() : ''}
           </p>
         </div>
         <div className="p-6">

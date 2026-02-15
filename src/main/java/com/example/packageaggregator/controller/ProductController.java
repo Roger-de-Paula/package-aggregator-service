@@ -34,7 +34,7 @@ public class ProductController {
     private final ProductClient productClient;
     private final ExchangeRateClient exchangeRateClient;
 
-    @Operation(summary = "List all products", description = "Returns the full product catalog from the external API with prices converted to the requested currency. Used by the frontend 'Create Package' flow.")
+    @Operation(operationId = "getProducts", summary = "List all products", description = "Returns the full product catalog from the external API with prices converted to the requested currency. Used by the frontend 'Create Package' flow.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of products with price and currency", content = @Content(schema = @Schema(implementation = ProductDto.class))),
             @ApiResponse(responseCode = "503", description = "Product or exchange rate service unavailable")

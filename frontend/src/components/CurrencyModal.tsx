@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchCurrencies } from '../api/packageApi'
+import { getCurrencies } from '../api'
 import { useCurrency } from '../contexts/CurrencyContext'
 
 const DEBOUNCE_MS = 300
@@ -8,7 +8,7 @@ export default function CurrencyModal() {
   const { currencyModalOpen, setCurrencyModalOpen, setCurrency } = useCurrency()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [options, setOptions] = useState<{ code: string; name: string }[]>([])
+  const [options, setOptions] = useState<{ code?: string; name?: string }[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -22,7 +22,7 @@ export default function CurrencyModal() {
     if (!currencyModalOpen) return
     setLoading(true)
     setError(null)
-    fetchCurrencies(debouncedSearch)
+    getCurrencies(debouncedSearch ? { search: debouncedSearch } : undefined)
       .then(setOptions)
       .catch((e) => setError(e.response?.data?.message ?? e.message ?? 'Failed to load currencies'))
       .finally(() => setLoading(false))
@@ -91,10 +91,10 @@ export default function CurrencyModal() {
           {!loading && !error && options.length > 0 && (
             <ul className="space-y-0.5">
               {options.map((opt) => (
-                <li key={opt.code}>
+                <li key={opt.code ?? ''}>
                   <button
                     type="button"
-                    onClick={() => handleSelect(opt.code)}
+                    onClick={() => handleSelect(opt.code ?? '')}
                     className="w-full text-left rounded-lg px-3 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   >
                     <span className="font-mono text-amber-600 dark:text-amber-400">{opt.code}</span>

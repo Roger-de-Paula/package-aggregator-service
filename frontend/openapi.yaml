@@ -1,0 +1,251 @@
+openapi: "3.0.1"
+info:
+  title: Package Aggregation Service API
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8080
+paths:
+  /packages:
+    get:
+      operationId: getPackages
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: currency
+          in: query
+          schema:
+            type: string
+            default: USD
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageDtoPackageSummaryDto"
+    post:
+      operationId: createPackage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePackageRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackageResponseDto"
+  /packages/{id}:
+    get:
+      operationId: getPackageById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: currency
+          in: query
+          schema:
+            type: string
+            default: USD
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackageResponseDto"
+    put:
+      operationId: updatePackage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePackageRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackageResponseDto"
+    delete:
+      operationId: deletePackage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+  /products:
+    get:
+      operationId: getProducts
+      parameters:
+        - name: currency
+          in: query
+          schema:
+            type: string
+            default: USD
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductDto"
+  /currencies:
+    get:
+      operationId: getCurrencies
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CurrencyOptionDto"
+components:
+  schemas:
+    CreatePackageRequest:
+      type: object
+      required:
+        - name
+        - productIds
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        productIds:
+          type: array
+          items:
+            type: string
+    UpdatePackageRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    PackageResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        totalPrice:
+          type: number
+        currency:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/PackageProductDto"
+    PackageProductDto:
+      type: object
+      properties:
+        externalProductId:
+          type: string
+        productName:
+          type: string
+        productPriceUsd:
+          type: number
+        price:
+          type: number
+        currency:
+          type: string
+    PackageSummaryDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        totalPrice:
+          type: number
+        currency:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    PageDtoPackageSummaryDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/PackageSummaryDto"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        first:
+          type: boolean
+        last:
+          type: boolean
+    ProductDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        currency:
+          type: string
+    CurrencyOptionDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
