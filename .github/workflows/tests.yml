@@ -22,7 +22,9 @@ jobs:
           cache: maven
 
       - name: Run tests
-        run: ./mvnw test -B
+        run: |
+          chmod +x mvnw
+          ./mvnw test -B
 
   frontend-build:
     name: Frontend build

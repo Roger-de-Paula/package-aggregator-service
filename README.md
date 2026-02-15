@@ -86,7 +86,7 @@ We **do not** store only `productIds`. At package creation we:
 
 - Java 11, Spring Boot 2.7
 - Spring Web, Spring Data JPA (Hibernate), H2 (in-memory)
-- Spring Cache (Caffeine), Actuator, WebClient (no RestTemplate), Lombok  
+- Spring Cache (Caffeine), WebClient (no RestTemplate), Lombok  
 - Build: Maven
 
 **Frontend**
@@ -116,7 +116,6 @@ docker compose up --build
 
 - **Frontend:** http://localhost:5173  
 - **Backend API:** http://localhost:8080  
-- **Health:** http://localhost:8080/actuator/health  
 - **Swagger UI (API docs):** http://localhost:8080/swagger-ui.html  
 - **OpenAPI JSON:** http://localhost:8080/v3/api-docs  
 
@@ -142,7 +141,6 @@ mvn spring-boot:run
 ```
 
 - Server: **http://localhost:8080**
-- Health: **http://localhost:8080/actuator/health**
 - API base: **http://localhost:8080/packages**
 
 #### Frontend
