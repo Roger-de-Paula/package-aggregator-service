@@ -1,39 +1,31 @@
-import { useState, FormEvent, useEffect } from 'react'
+import { useState, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createPackage, getProducts } from '../api'
+import { useQueryClient } from '@tanstack/react-query'
+import { useCreatePackage, useGetProducts, getGetPackagesQueryKey } from '../api'
 import { useCurrency } from '../contexts/CurrencyContext'
-import type { ProductDto } from '../api'
 
 export default function CreatePackage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { currency } = useCurrency()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [products, setProducts] = useState<ProductDto[]>([])
-  const [productsLoading, setProductsLoading] = useState(true)
-  const [productsError, setProductsError] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [submitLoading, setSubmitLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let cancelled = false
-    setProductsLoading(true)
-    setProductsError(null)
-    getProducts({ currency })
-      .then((data) => {
-        if (!cancelled) setProducts(data)
-      })
-      .catch((err: { response?: { data?: { message?: string } }; message?: string }) => {
-        if (!cancelled) setProductsError(err.response?.data?.message ?? err.message ?? 'Failed to load products')
-      })
-      .finally(() => {
-        if (!cancelled) setProductsLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [currency])
+  const { data: products = [], isLoading: productsLoading, isError: productsError, error: productsErrorObj } = useGetProducts({ currency })
+
+  const createPackageMutation = useCreatePackage({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetPackagesQueryKey() })
+        navigate('/')
+      },
+      onError: (err: { response?: { data?: { message?: string } }; message?: string }) => {
+        setSubmitError(err?.response?.data?.message ?? err?.message ?? 'Failed to create package')
+      },
+    },
+  })
 
   const toggleProduct = (id: string) => {
     setSelectedIds((prev) => {
@@ -51,15 +43,13 @@ export default function CreatePackage() {
       setSubmitError('Select at least one product.')
       return
     }
-    setSubmitLoading(true)
     setSubmitError(null)
-    createPackage({ name, description: description || undefined, productIds })
-      .then(() => navigate('/'))
-      .catch((err: { response?: { data?: { message?: string } }; message?: string }) =>
-        setSubmitError(err.response?.data?.message ?? err.message ?? 'Failed to create package')
-      )
-      .finally(() => setSubmitLoading(false))
+    createPackageMutation.mutate({
+      data: { name, description: description || undefined, productIds },
+    })
   }
+
+  const submitLoading = createPackageMutation.isPending
 
   return (
     <div>
@@ -109,7 +99,9 @@ export default function CreatePackage() {
 
           {productsError && (
             <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-red-700 dark:text-red-300">
-              {productsError}
+              {(productsErrorObj as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ??
+                (productsErrorObj as Error)?.message ??
+                'Failed to load products'}
             </div>
           )}
 

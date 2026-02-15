@@ -14,11 +14,20 @@ A production-oriented take-home assessment implementing a **Package Aggregation 
 - **Client**: Outbound integration. `ProductClient` (WebClient, basic auth, timeout, retries), `ExchangeRateClient` (cached).
 - **Domain**: Entities only. `PackageEntity`, `PackageProductEntity`.
 
+### Transaction boundary
+
+Package creation **does not** call the external API inside a DB transaction:
+
+1. **Fetch and validate** all products via `ProductClient.getProductsByIds(ids)` (outside any transaction).
+2. **Then** a single short `@Transactional` method persists the package and product snapshots.
+
+This avoids holding a DB connection while the external API is called (connection pool exhaustion and timeouts if the API hangs).
+
 ### Why Snapshotting?
 
 We **do not** store only `productIds`. At package creation we:
 
-1. Fetch each product from the external Product API.
+1. Fetch each product from the external Product API (batch/parallel; see above).
 2. Persist **snapshots**: `externalProductId`, `productName`, `productPriceUsd` in `PackageProductEntity`.
 3. Store `totalPriceUsd` on `PackageEntity`.
 
@@ -34,11 +43,11 @@ We **do not** store only `productIds`. At package creation we:
 - Conversion to EUR, GBP, etc. happens **only at response time** via `ExchangeRateClient`.
 - We never persist converted amounts.
 
-### Caching Strategy
+### Caching and batch strategy
 
 - **Spring Cache + Caffeine**
-- **Products**: TTL 30 minutes. Key: product id. Reduces calls to the product service when creating multiple packages or retrying.
-- **Exchange rates**: TTL 1 hour, separate cache manager. Key: target currency. Keeps list/detail responses fast and avoids hitting Frankfurter on every request.
+- **Products**: TTL 30 minutes, key by product id. `ProductClient.getProductById(id)` is cached; **`getProductsByIds(ids)`** fetches all requested ids **in parallel** (and uses the same cache), so package creation with 8 products does not block for 8× round-trip time.
+- **Exchange rates**: `@Cacheable("exchangeRates")` (Caffeine, 1 hour TTL) on `ExchangeRateClient.getRateUsdTo(currency)`. Rates change ~once per day, so we avoid repeated calls to the provider. List and detail reuse the same rate per request; Frankfurter is not called on every package row.
 
 ### Resilience Strategy
 
@@ -49,17 +58,23 @@ We **do not** store only `productIds`. At package creation we:
 - **ExchangeRateClient**
   - 1-hour cache to avoid repeated calls and to tolerate short outages.
   - Throws same exception on failure.
-- **Controller advice** maps:
+- **Controller advice** (`GlobalExceptionHandler`) maps:
   - `PackageNotFoundException` → **404**
+  - `InvalidProductException` (invalid or missing product id/price) → **400 Bad Request**
   - Validation / `IllegalArgumentException` → **400**
-  - `ExternalServiceUnavailableException` → **503**
+  - `ExternalServiceUnavailableException` (product or exchange-rate API down/timeout/rate limit) → **503 Service Unavailable**  
+  **500** means our system is broken; **503** means a dependency is temporarily unavailable. Aggregators must distinguish these so callers can retry or degrade gracefully.
 
 ### Tradeoffs
 
 - **Snapshot at create time**: More storage and a heavier create flow, but correct and resilient reads. Acceptable for an aggregation service.
 - **Blocking WebClient**: We use `.block()` in clients for simplicity. A full reactive stack would avoid blocking but increase complexity.
 - **Single cache manager for products**: One TTL for all product entries. Fine for this scope; could be per-key TTL if needed.
-- **Soft delete**: Deleted packages are hidden from queries but kept in DB for audit; no hard delete to avoid breaking referential integrity and history.
+- **Soft delete**: Packages are soft-deleted (flag on entity). **All read operations** use `findByIdAndDeletedFalse` / `findAllByDeletedFalse`; deleted packages never appear in list or get-by-id. They remain in the DB for audit and referential integrity.
+
+### Design decision: package composition immutable after creation
+
+**Package composition (product list) is immutable after creation** to preserve historical price integrity and auditability. The update endpoint allows changing only **name** and **description**. This is a common pattern in commerce: once a package is created, its snapshot of products and prices is fixed so that past orders and reports remain consistent. If product composition had to change, the design would support a new version or a new package instead of mutating the existing one.
 
 ---
 
@@ -167,11 +182,11 @@ Setup follows common practices:
 |--------|------|-------------|
 | GET    | `/currencies` | **Internal.** Supported currencies (from Frankfurter). Query: `search` (optional, filters by code or name). Cached. Returns `[{ code, name }]`. |
 | GET    | `/products` | **Internal.** Product catalog for the frontend (e.g. to build a package by selection). Returns list of `{ id, name, price, currency }`. Cached. |
-| POST   | `/packages` | Create package (body: name, description, productIds). Snapshots products, stores in USD. |
+| POST   | `/packages` | Create package (body: name, description, productIds). **Validated**: `name` @NotBlank, `productIds` @NotEmpty (at least one product). Snapshots products, stores in USD. |
 | GET    | `/packages` | List packages (paginated). Query: `page`, `size`, `currency` (default USD). |
 | GET    | `/packages/{id}` | Get one package. Query: `currency` (optional). |
-| PUT    | `/packages/{id}` | Update name and description only (products immutable). |
-| DELETE | `/packages/{id}` | Soft delete. |
+| PUT    | `/packages/{id}` | Update name and description only. **Product composition is immutable after creation** to preserve price history integrity. |
+| DELETE | `/packages/{id}` | Soft delete. **Idempotent**: second delete returns 204. |
 
 ---
 

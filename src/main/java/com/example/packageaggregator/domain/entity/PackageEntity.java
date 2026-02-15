@@ -6,11 +6,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -27,6 +31,8 @@ import java.util.UUID;
 public class PackageEntity {
 
     @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Column(columnDefinition = "VARBINARY(16)")
     private UUID id;
 
@@ -45,7 +51,7 @@ public class PackageEntity {
     @Builder.Default
     private boolean deleted = false;
 
-    @OneToMany(mappedBy = "packageEntity", orphanRemoval = true)
+    @OneToMany(mappedBy = "packageEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<PackageProductEntity> products = new ArrayList<>();
 }

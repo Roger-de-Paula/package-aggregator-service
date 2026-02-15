@@ -30,10 +30,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ExternalServiceUnavailableException.class)
     public ResponseEntity<ErrorBody> handleExternalServiceUnavailable(ExternalServiceUnavailableException ex) {
         log.error("External service unavailable: {}", ex.getMessage());
+        String message = ex.getMessage() != null && !ex.getMessage().isBlank()
+                ? ex.getMessage()
+                : "A required external service is temporarily unavailable.";
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ErrorBody.builder()
                 .status(503)
                 .error("Service Unavailable")
-                .message(ex.getMessage())
+                .message(message)
                 .timestamp(Instant.now().toString())
                 .build());
     }
@@ -52,6 +55,17 @@ public class GlobalExceptionHandler {
                 .message(message)
                 .timestamp(Instant.now().toString())
                 .validationErrors(errors)
+                .build());
+    }
+
+    @ExceptionHandler(InvalidProductException.class)
+    public ResponseEntity<ErrorBody> handleInvalidProduct(InvalidProductException ex) {
+        log.warn("Invalid product: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorBody.builder()
+                .status(400)
+                .error("Bad Request")
+                .message(ex.getMessage())
+                .timestamp(Instant.now().toString())
                 .build());
     }
 

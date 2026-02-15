@@ -12,7 +12,7 @@ export default defineConfig({
     input: { target: inputTarget },
     output: {
       target: './src/api/generated/api.ts',
-      client: 'axios',
+      client: 'react-query',
       override: {
         mutator: {
           path: './src/api/axios-instance.ts',

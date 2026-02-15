@@ -95,9 +95,9 @@ public class PackageController {
         return ResponseEntity.ok(dto);
     }
 
-    @Operation(operationId = "deletePackage", summary = "Soft-delete package", description = "Marks the package as deleted. It no longer appears in list or get-by-id. Data is retained for audit.")
+    @Operation(operationId = "deletePackage", summary = "Soft-delete package", description = "Marks the package as deleted. Idempotent: deleting an already-deleted package also returns 204. Data is retained for audit.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Package deleted"),
+            @ApiResponse(responseCode = "204", description = "Package deleted (or already deleted)"),
             @ApiResponse(responseCode = "404", description = "Package not found")
     })
     @DeleteMapping("/{id}")

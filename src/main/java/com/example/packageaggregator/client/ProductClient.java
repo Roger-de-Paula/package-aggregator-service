@@ -15,6 +15,10 @@ import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -28,6 +32,35 @@ public class ProductClient {
         this.productWebClient = productWebClient;
     }
 
+
+    /**
+     * Fetches multiple products by id in parallel. Uses the same cache as {@link #getProductById(String)},
+     * so repeated or duplicate ids are served from cache. Reduces wall-clock time vs sequential calls.
+     * Any HTTP/timeout/5xx failure from the external API is translated to {@link ExternalServiceUnavailableException}
+     * so the API returns 503 (dependency unavailable), not 500.
+     */
+    public Map<String, ExternalProductResponse> getProductsByIds(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Map.of();
+        }
+        try {
+            List<CompletableFuture<Map.Entry<String, ExternalProductResponse>>> futures = ids.stream()
+                    .distinct()
+                    .map(id -> CompletableFuture.supplyAsync(() -> Map.entry(id, getProductById(id))))
+                    .collect(Collectors.toList());
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            return futures.stream()
+                    .map(CompletableFuture::join)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a));
+        } catch (Exception e) {
+            Throwable cause = e instanceof ExecutionException ? e.getCause() : e;
+            if (cause instanceof ExternalServiceUnavailableException) {
+                throw (ExternalServiceUnavailableException) cause;
+            }
+            log.error("Product service unavailable during batch fetch: {}", cause != null ? cause.getMessage() : e.getMessage());
+            throw new ExternalServiceUnavailableException("The product service is temporarily unavailable.", cause != null ? cause : e);
+        }
+    }
 
     @Cacheable(CacheConfig.PRODUCT_CACHE)
     public ExternalProductResponse getProductById(String id) {

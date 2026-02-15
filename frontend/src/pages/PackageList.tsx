@@ -1,33 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getPackages } from '../api'
+import { useGetPackages } from '../api'
 import { useCurrency } from '../contexts/CurrencyContext'
-import type { PackageSummaryDto } from '../api'
 
 export default function PackageList() {
   const { currency } = useCurrency()
-  const [packages, setPackages] = useState<PackageSummaryDto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
   const size = 20
 
-  useEffect(() => {
-    setLoading(true)
-    setError(null)
-    getPackages({ page, size, currency })
-      .then((data) => {
-        setPackages(data.content ?? [])
-        setTotalPages(data.totalPages ?? 0)
-      })
-      .catch((err: { response?: { data?: { message?: string } }; message?: string }) =>
-        setError(err.response?.data?.message ?? err.message ?? 'Failed to load')
-      )
-      .finally(() => setLoading(false))
-  }, [page, currency])
+  const { data, isLoading, isError, error } = useGetPackages({ page, size, currency })
 
-  if (loading && packages.length === 0) {
+  const packages = data?.content ?? []
+  const totalPages = data?.totalPages ?? 0
+
+  if (isLoading && packages.length === 0) {
     return (
       <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
         <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
@@ -35,10 +21,11 @@ export default function PackageList() {
       </div>
     )
   }
-  if (error) {
+  if (isError) {
+    const err = error as { response?: { data?: { message?: string } }; message?: string }
     return (
       <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-red-700 dark:text-red-300">
-        Error: {error}
+        Error: {err?.response?.data?.message ?? err?.message ?? 'Failed to load'}
       </div>
     )
   }

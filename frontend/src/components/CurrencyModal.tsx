@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getCurrencies } from '../api'
+import { useGetCurrencies } from '../api'
 import { useCurrency } from '../contexts/CurrencyContext'
 
 const DEBOUNCE_MS = 300
@@ -8,9 +8,6 @@ export default function CurrencyModal() {
   const { currencyModalOpen, setCurrencyModalOpen, setCurrency } = useCurrency()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [options, setOptions] = useState<{ code?: string; name?: string }[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!currencyModalOpen) return
@@ -18,20 +15,18 @@ export default function CurrencyModal() {
     return () => clearTimeout(t)
   }, [currencyModalOpen, search])
 
-  useEffect(() => {
-    if (!currencyModalOpen) return
-    setLoading(true)
-    setError(null)
-    getCurrencies(debouncedSearch ? { search: debouncedSearch } : undefined)
-      .then(setOptions)
-      .catch((e) => setError(e.response?.data?.message ?? e.message ?? 'Failed to load currencies'))
-      .finally(() => setLoading(false))
-  }, [currencyModalOpen, debouncedSearch])
+  const { data: options = [], isLoading: loading, isError, error } = useGetCurrencies(
+    debouncedSearch ? { search: debouncedSearch } : undefined,
+    {
+      query: {
+        enabled: currencyModalOpen,
+      },
+    }
+  )
 
   const handleClose = useCallback(() => {
     setCurrencyModalOpen(false)
     setSearch('')
-    setError(null)
   }, [setCurrencyModalOpen])
 
   const handleSelect = useCallback(
@@ -78,17 +73,19 @@ export default function CurrencyModal() {
               Loading…
             </div>
           )}
-          {error && (
+          {isError && (
             <div className="py-4 text-center text-red-600 dark:text-red-400 text-sm">
-              {error}
+              {(error as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ??
+                (error as Error)?.message ??
+                'Failed to load currencies'}
             </div>
           )}
-          {!loading && !error && options.length === 0 && (
+          {!loading && !isError && options.length === 0 && (
             <div className="py-6 text-center text-slate-500 dark:text-slate-400 text-sm">
               {debouncedSearch ? 'No currencies match your search.' : 'Type to search currencies.'}
             </div>
           )}
-          {!loading && !error && options.length > 0 && (
+          {!loading && !isError && options.length > 0 && (
             <ul className="space-y-0.5">
               {options.map((opt) => (
                 <li key={opt.code ?? ''}>

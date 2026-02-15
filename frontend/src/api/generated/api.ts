@@ -4,6 +4,25 @@
  * Package Aggregation Service API
  * OpenAPI spec version: 1.0.0
  */
+import {
+  useMutation,
+  useQuery
+} from '@tanstack/react-query';
+import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  MutationFunction,
+  QueryClient,
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult
+} from '@tanstack/react-query';
+
 import { customInstance } from '../axios-instance';
 export interface CreatePackageRequest {
   name: string;
@@ -86,43 +105,253 @@ search?: string;
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
-  export const getPackageAggregationServiceAPI = () => {
-const getPackages = (
+
+export const getPackages = (
     params?: GetPackagesParams,
- options?: SecondParameter<typeof customInstance<PageDtoPackageSummaryDto>>,) => {
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
       return customInstance<PageDtoPackageSummaryDto>(
       {url: `/packages`, method: 'GET',
-        params
+        params, signal
     },
       options);
     }
   
-const createPackage = (
+
+
+
+export const getGetPackagesQueryKey = (params?: GetPackagesParams,) => {
+    return [
+    `/packages`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetPackagesQueryOptions = <TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(params?: GetPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPackagesQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackages>>> = ({ signal }) => getPackages(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPackagesQueryResult = NonNullable<Awaited<ReturnType<typeof getPackages>>>
+export type GetPackagesQueryError = unknown
+
+
+export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
+ params: undefined |  GetPackagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPackages>>,
+          TError,
+          Awaited<ReturnType<typeof getPackages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
+ params?: GetPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPackages>>,
+          TError,
+          Awaited<ReturnType<typeof getPackages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
+ params?: GetPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
+ params?: GetPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetPackagesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+export const createPackage = (
     createPackageRequest: CreatePackageRequest,
- options?: SecondParameter<typeof customInstance<PackageResponseDto>>,) => {
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
       return customInstance<PackageResponseDto>(
       {url: `/packages`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: createPackageRequest
+      data: createPackageRequest, signal
     },
       options);
     }
   
-const getPackageById = (
+
+
+export const getCreatePackageMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackage>>, TError,{data: CreatePackageRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPackage>>, TError,{data: CreatePackageRequest}, TContext> => {
+
+const mutationKey = ['createPackage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPackage>>, {data: CreatePackageRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createPackage(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePackageMutationResult = NonNullable<Awaited<ReturnType<typeof createPackage>>>
+    export type CreatePackageMutationBody = CreatePackageRequest
+    export type CreatePackageMutationError = unknown
+
+    export const useCreatePackage = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackage>>, TError,{data: CreatePackageRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createPackage>>,
+        TError,
+        {data: CreatePackageRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getCreatePackageMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+export const getPackageById = (
     id: string,
     params?: GetPackageByIdParams,
- options?: SecondParameter<typeof customInstance<PackageResponseDto>>,) => {
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
       return customInstance<PackageResponseDto>(
       {url: `/packages/${id}`, method: 'GET',
-        params
+        params, signal
     },
       options);
     }
   
-const updatePackage = (
+
+
+
+export const getGetPackageByIdQueryKey = (id?: string,
+    params?: GetPackageByIdParams,) => {
+    return [
+    `/packages/${id}`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetPackageByIdQueryOptions = <TData = Awaited<ReturnType<typeof getPackageById>>, TError = unknown>(id: string,
+    params?: GetPackageByIdParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageById>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPackageByIdQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackageById>>> = ({ signal }) => getPackageById(id,params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPackageById>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPackageByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getPackageById>>>
+export type GetPackageByIdQueryError = unknown
+
+
+export function useGetPackageById<TData = Awaited<ReturnType<typeof getPackageById>>, TError = unknown>(
+ id: string,
+    params: undefined |  GetPackageByIdParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageById>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPackageById>>,
+          TError,
+          Awaited<ReturnType<typeof getPackageById>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPackageById<TData = Awaited<ReturnType<typeof getPackageById>>, TError = unknown>(
+ id: string,
+    params?: GetPackageByIdParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageById>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPackageById>>,
+          TError,
+          Awaited<ReturnType<typeof getPackageById>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPackageById<TData = Awaited<ReturnType<typeof getPackageById>>, TError = unknown>(
+ id: string,
+    params?: GetPackageByIdParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageById>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetPackageById<TData = Awaited<ReturnType<typeof getPackageById>>, TError = unknown>(
+ id: string,
+    params?: GetPackageByIdParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageById>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetPackageByIdQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+export const updatePackage = (
     id: string,
     updatePackageRequest: UpdatePackageRequest,
- options?: SecondParameter<typeof customInstance<PackageResponseDto>>,) => {
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
       return customInstance<PackageResponseDto>(
       {url: `/packages/${id}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -131,40 +360,274 @@ const updatePackage = (
       options);
     }
   
-const deletePackage = (
+
+
+export const getUpdatePackageMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePackage>>, TError,{id: string;data: UpdatePackageRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof updatePackage>>, TError,{id: string;data: UpdatePackageRequest}, TContext> => {
+
+const mutationKey = ['updatePackage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePackage>>, {id: string;data: UpdatePackageRequest}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updatePackage(id,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdatePackageMutationResult = NonNullable<Awaited<ReturnType<typeof updatePackage>>>
+    export type UpdatePackageMutationBody = UpdatePackageRequest
+    export type UpdatePackageMutationError = unknown
+
+    export const useUpdatePackage = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePackage>>, TError,{id: string;data: UpdatePackageRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updatePackage>>,
+        TError,
+        {id: string;data: UpdatePackageRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdatePackageMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+export const deletePackage = (
     id: string,
- options?: SecondParameter<typeof customInstance<void>>,) => {
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
       return customInstance<void>(
       {url: `/packages/${id}`, method: 'DELETE'
     },
       options);
     }
   
-const getProducts = (
+
+
+export const getDeletePackageMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePackage>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof deletePackage>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deletePackage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePackage>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deletePackage(id,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeletePackageMutationResult = NonNullable<Awaited<ReturnType<typeof deletePackage>>>
+    
+    export type DeletePackageMutationError = unknown
+
+    export const useDeletePackage = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePackage>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deletePackage>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeletePackageMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+export const getProducts = (
     params?: GetProductsParams,
- options?: SecondParameter<typeof customInstance<ProductDto[]>>,) => {
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
       return customInstance<ProductDto[]>(
       {url: `/products`, method: 'GET',
-        params
+        params, signal
     },
       options);
     }
   
-const getCurrencies = (
+
+
+
+export const getGetProductsQueryKey = (params?: GetProductsParams,) => {
+    return [
+    `/products`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetProductsQueryOptions = <TData = Awaited<ReturnType<typeof getProducts>>, TError = unknown>(params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProducts>>> = ({ signal }) => getProducts(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProductsQueryResult = NonNullable<Awaited<ReturnType<typeof getProducts>>>
+export type GetProductsQueryError = unknown
+
+
+export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = unknown>(
+ params: undefined |  GetProductsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProducts>>,
+          TError,
+          Awaited<ReturnType<typeof getProducts>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = unknown>(
+ params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProducts>>,
+          TError,
+          Awaited<ReturnType<typeof getProducts>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = unknown>(
+ params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = unknown>(
+ params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProductsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+export const getCurrencies = (
     params?: GetCurrenciesParams,
- options?: SecondParameter<typeof customInstance<CurrencyOptionDto[]>>,) => {
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
       return customInstance<CurrencyOptionDto[]>(
       {url: `/currencies`, method: 'GET',
-        params
+        params, signal
     },
       options);
     }
   
-return {getPackages,createPackage,getPackageById,updatePackage,deletePackage,getProducts,getCurrencies}};
-export type GetPackagesResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getPackageAggregationServiceAPI>['getPackages']>>>
-export type CreatePackageResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getPackageAggregationServiceAPI>['createPackage']>>>
-export type GetPackageByIdResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getPackageAggregationServiceAPI>['getPackageById']>>>
-export type UpdatePackageResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getPackageAggregationServiceAPI>['updatePackage']>>>
-export type DeletePackageResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getPackageAggregationServiceAPI>['deletePackage']>>>
-export type GetProductsResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getPackageAggregationServiceAPI>['getProducts']>>>
-export type GetCurrenciesResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getPackageAggregationServiceAPI>['getCurrencies']>>>
+
+
+
+export const getGetCurrenciesQueryKey = (params?: GetCurrenciesParams,) => {
+    return [
+    `/currencies`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetCurrenciesQueryOptions = <TData = Awaited<ReturnType<typeof getCurrencies>>, TError = unknown>(params?: GetCurrenciesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrencies>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCurrenciesQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrencies>>> = ({ signal }) => getCurrencies(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrencies>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCurrenciesQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrencies>>>
+export type GetCurrenciesQueryError = unknown
+
+
+export function useGetCurrencies<TData = Awaited<ReturnType<typeof getCurrencies>>, TError = unknown>(
+ params: undefined |  GetCurrenciesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrencies>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCurrencies>>,
+          TError,
+          Awaited<ReturnType<typeof getCurrencies>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCurrencies<TData = Awaited<ReturnType<typeof getCurrencies>>, TError = unknown>(
+ params?: GetCurrenciesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrencies>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCurrencies>>,
+          TError,
+          Awaited<ReturnType<typeof getCurrencies>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCurrencies<TData = Awaited<ReturnType<typeof getCurrencies>>, TError = unknown>(
+ params?: GetCurrenciesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrencies>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetCurrencies<TData = Awaited<ReturnType<typeof getCurrencies>>, TError = unknown>(
+ params?: GetCurrenciesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrencies>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCurrenciesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}

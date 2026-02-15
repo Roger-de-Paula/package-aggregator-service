@@ -4,6 +4,7 @@ import com.example.packageaggregator.client.ExchangeRateClient;
 import com.example.packageaggregator.client.ProductClient;
 import com.example.packageaggregator.client.dto.ExternalProductResponse;
 import com.example.packageaggregator.repository.PackageJpaRepository;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,9 +14,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,16 +43,18 @@ class PackageControllerTests {
 
     @Test
     void createPackage() throws Exception {
-        when(productClient.getProductById("id-1")).thenReturn(ExternalProductResponse.builder()
-                .id("id-1")
-                .name("Product 1")
-                .usdPrice(new BigDecimal("10.00"))
-                .build());
-        when(productClient.getProductById("id-2")).thenReturn(ExternalProductResponse.builder()
-                .id("id-2")
-                .name("Product 2")
-                .usdPrice(new BigDecimal("20.00"))
-                .build());
+        when(productClient.getProductsByIds(anyList())).thenReturn(Map.of(
+                "id-1", ExternalProductResponse.builder()
+                        .id("id-1")
+                        .name("Product 1")
+                        .usdPrice(new BigDecimal("10.00"))
+                        .build(),
+                "id-2", ExternalProductResponse.builder()
+                        .id("id-2")
+                        .name("Product 2")
+                        .usdPrice(new BigDecimal("20.00"))
+                        .build()
+        ));
 
         String body = "{\"name\":\"Starter Pack\",\"description\":\"Basic bundle\",\"productIds\":[\"id-1\",\"id-2\"]}";
         mockMvc.perform(post("/packages")
@@ -60,6 +66,46 @@ class PackageControllerTests {
                 .andExpect(jsonPath("$.totalPrice").value(30.0))
                 .andExpect(jsonPath("$.currency").value("USD"))
                 .andExpect(jsonPath("$.products.length()").value(2));
+    }
+
+    @Test
+    void createPackage_blankName_returns400() throws Exception {
+        mockMvc.perform(post("/packages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"\",\"description\":\"\",\"productIds\":[\"id-1\"]}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createPackage_emptyProductIds_returns400() throws Exception {
+        mockMvc.perform(post("/packages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"A Pack\",\"description\":\"\",\"productIds\":[]}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createPackage_partialProductResponse_returns400() throws Exception {
+        when(productClient.getProductsByIds(anyList())).thenReturn(Map.of(
+                "id-1", ExternalProductResponse.builder().id("id-1").name("Product 1").usdPrice(new BigDecimal("10.00")).build()
+        ));
+        mockMvc.perform(post("/packages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Pack\",\"description\":\"\",\"productIds\":[\"id-1\",\"id-missing\"]}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createPackage_invalidProduct_returns400() throws Exception {
+        when(productClient.getProductsByIds(anyList())).thenReturn(Map.of(
+                "id-1", ExternalProductResponse.builder().id("id-1").name("Product 1").usdPrice(new BigDecimal("10.00")).build(),
+                "id-missing", ExternalProductResponse.builder().id("id-missing").name("Unknown").usdPrice(null).build()
+        ));
+        String body = "{\"name\":\"Bad Pack\",\"description\":\"\",\"productIds\":[\"id-1\",\"id-missing\"]}";
+        mockMvc.perform(post("/packages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -76,5 +122,19 @@ class PackageControllerTests {
         when(exchangeRateClient.getRateUsdTo(anyString())).thenReturn(new BigDecimal("0.92"));
         mockMvc.perform(get("/packages").param("currency", "EUR"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void deletePackage_secondDeleteReturns204() throws Exception {
+        when(productClient.getProductsByIds(anyList())).thenReturn(Map.of(
+                "id-1", ExternalProductResponse.builder().id("id-1").name("P1").usdPrice(new BigDecimal("5.00")).build()
+        ));
+        String createBody = "{\"name\":\"To Delete\",\"description\":\"\",\"productIds\":[\"id-1\"]}";
+        String responseBody = mockMvc.perform(post("/packages").contentType(MediaType.APPLICATION_JSON).content(createBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String id = JsonPath.read(responseBody, "$.id");
+        mockMvc.perform(delete("/packages/" + id)).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/packages/" + id)).andExpect(status().isNoContent());
     }
 }

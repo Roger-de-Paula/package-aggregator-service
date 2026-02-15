@@ -7,9 +7,11 @@ C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\exa
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\api\dto\PackageProductDto.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\repository\PackageProductJpaRepository.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\domain\entity\PackageProductEntity.java
+C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\config\OpenApiConfig.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\api\mapper\PackageMapper.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\config\CacheConfig.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\config\WebMvcConfig.java
+C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\api\dto\CurrencyOptionDto.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\domain\entity\PackageEntity.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\exception\GlobalExceptionHandler.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\repository\PackageJpaRepository.java
@@ -18,7 +20,9 @@ C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\exa
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\api\dto\UpdatePackageRequest.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\client\ExchangeRateClient.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\controller\PackageController.java
+C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\exception\InvalidProductException.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\config\WebClientConfig.java
+C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\controller\CurrencyController.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\PackageAggregatorService.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\api\dto\PageDto.java
 C:\Users\roger\Documents\GitHub\package-aggregator-service\src\main\java\com\example\packageaggregator\exception\ExternalServiceUnavailableException.java
