@@ -81,13 +81,35 @@ We **do not** store only `productIds`. At package creation we:
 
 ## How to Run
 
-### Prerequisites
+### Option 1: Docker (easiest)
+
+Running the app in Docker is the simplest way—you don’t need to run the frontend and backend separately or install Java/Node locally.
+
+**Prerequisites:** [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/).
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+- **Frontend:** http://localhost:5173  
+- **Backend API:** http://localhost:8080  
+- **Health:** http://localhost:8080/actuator/health  
+
+Stop with `Ctrl+C`, or run in the background with `docker compose up -d --build`.
+
+---
+
+### Option 2: Run backend and frontend separately
+
+#### Prerequisites
 
 - **Java 11+**
 - **Node.js 18+** (for frontend)
 - **Maven** (or use wrapper `mvnw.cmd`)
 
-### Backend
+#### Backend
 
 ```bash
 # From project root
@@ -100,7 +122,7 @@ mvn spring-boot:run
 - Health: **http://localhost:8080/actuator/health**
 - API base: **http://localhost:8080/packages**
 
-### Frontend
+#### Frontend
 
 ```bash
 cd frontend
@@ -111,7 +133,7 @@ npm run dev
 - App: **http://localhost:5173**
 - Ensure the backend is running so API calls to `http://localhost:8080` succeed (CORS is allowed for `http://localhost:5173`).
 
-### Optional: Run tests
+#### Optional: Run tests
 
 ```bash
 ./mvnw test
