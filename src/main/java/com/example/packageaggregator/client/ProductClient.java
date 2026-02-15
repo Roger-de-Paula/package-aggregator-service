@@ -28,6 +28,7 @@ public class ProductClient {
         this.productWebClient = productWebClient;
     }
 
+
     @Cacheable(CacheConfig.PRODUCT_CACHE)
     public ExternalProductResponse getProductById(String id) {
         try {

@@ -74,7 +74,7 @@ We **do not** store only `productIds`. At package creation we:
 
 **Frontend**
 
-- React (Vite), Axios, React Router
+- React (Vite), **Axios** for all HTTP calls (single configured instance, typed responses), React Router
 - Functional components, minimal UI
 
 ---
@@ -96,6 +96,8 @@ docker compose up --build
 - **Frontend:** http://localhost:5173  
 - **Backend API:** http://localhost:8080  
 - **Health:** http://localhost:8080/actuator/health  
+- **Swagger UI (API docs):** http://localhost:8080/swagger-ui.html  
+- **OpenAPI JSON:** http://localhost:8080/v3/api-docs  
 
 Stop with `Ctrl+C`, or run in the background with `docker compose up -d --build`.
 
@@ -140,6 +142,22 @@ npm run dev
 ```
 
 Tests mock `ProductClient` and `ExchangeRateClient` so they do not call real APIs.
+
+---
+
+## API Documentation (Swagger / OpenAPI 3)
+
+The backend exposes **OpenAPI 3** documentation:
+
+- **Swagger UI:** http://localhost:8080/swagger-ui.html — browse all endpoints, see request/response schemas, and try requests.
+- **OpenAPI JSON:** http://localhost:8080/v3/api-docs — machine-readable spec.
+
+Setup follows common practices:
+
+- **springdoc-openapi-ui** (no Springfox); one `OpenAPI` bean with title, description, version, and server.
+- **Tags** group endpoints (Packages, Products, Currencies).
+- **@Operation** on each method with summary and description; **@ApiResponses** for success and error codes (400, 404, 503).
+- **@Parameter** for path/query args; **@Schema** on key DTOs for clear request/response models.
 
 ---
 

@@ -8,6 +8,7 @@ import type {
   Product
 } from '../types/api'
 
+/** Single Axios instance for all backend calls (base URL, JSON, interceptors if needed). */
 const api = axios.create({
   baseURL: 'http://localhost:8080',
   headers: { 'Content-Type': 'application/json' },
