@@ -1,5 +1,7 @@
 # Package Aggregation Service
 
+[![Tests](https://github.com/roger/package-aggregator-service/actions/workflows/tests.yml/badge.svg)](https://github.com/roger/package-aggregator-service/actions/workflows/tests.yml)
+
 A production-oriented take-home assessment implementing a **Package Aggregation Service** that depends on unreliable third-party APIs. Built with Clean Architecture and SOLID principles.
 
 ---
@@ -91,6 +93,10 @@ We **do not** store only `productIds`. At package creation we:
 
 - React (Vite), **Axios** for all HTTP calls (single configured instance, typed responses), React Router
 - Functional components, minimal UI
+
+**CI**
+
+- GitHub Actions (`.github/workflows/tests.yml`): backend tests (`./mvnw test`) and frontend build (`npm ci && npm run build`) on push and pull_request to `main`.
 
 ---
 
