@@ -1,13 +1,21 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
-import { CurrencyProvider, useCurrency, CURRENCIES } from './contexts/CurrencyContext'
+import { CurrencyProvider, useCurrency, QUICK_CURRENCIES } from './contexts/CurrencyContext'
+import CurrencyModal from './components/CurrencyModal'
 import PackageList from './pages/PackageList'
 import CreatePackage from './pages/CreatePackage'
 import PackageDetail from './pages/PackageDetail'
 
+const MORE_CURRENCIES_VALUE = '__more__'
+
 function AppShell() {
   const { theme, toggleTheme } = useTheme()
-  const { currency, setCurrency } = useCurrency()
+  const { currency, setCurrency, setCurrencyModalOpen } = useCurrency()
+  const dropdownOptions = [
+    ...QUICK_CURRENCIES,
+    ...(currency && !QUICK_CURRENCIES.includes(currency as typeof QUICK_CURRENCIES[number]) ? [currency] : []),
+    MORE_CURRENCIES_VALUE,
+  ]
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 transition-colors">
@@ -19,11 +27,17 @@ function AppShell() {
               Currency
               <select
                 value={currency}
-                onChange={(e) => setCurrency(e.target.value as typeof currency)}
+                onChange={(e) => {
+                  const v = e.target.value
+                  if (v === MORE_CURRENCIES_VALUE) setCurrencyModalOpen(true)
+                  else setCurrency(v)
+                }}
                 className="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 dark:focus:ring-amber-400 outline-none"
               >
-                {CURRENCIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                {dropdownOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c === MORE_CURRENCIES_VALUE ? '— More currencies…' : c}
+                  </option>
                 ))}
               </select>
             </label>
@@ -77,6 +91,7 @@ function AppShell() {
           <Route path="/packages/:id" element={<PackageDetail />} />
         </Routes>
       </main>
+      <CurrencyModal />
     </div>
   )
 }

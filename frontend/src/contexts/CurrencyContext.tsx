@@ -1,19 +1,30 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 
-export const CURRENCIES = ['USD', 'EUR', 'GBP'] as const
-export type Currency = (typeof CURRENCIES)[number]
+/** Quick-access currencies in the header dropdown. */
+export const QUICK_CURRENCIES = ['USD', 'EUR', 'GBP'] as const
+export type QuickCurrency = (typeof QUICK_CURRENCIES)[number]
 
 interface CurrencyContextValue {
-  currency: Currency
-  setCurrency: (c: Currency) => void
+  currency: string
+  setCurrency: (c: string) => void
+  currencyModalOpen: boolean
+  setCurrencyModalOpen: (open: boolean) => void
 }
 
 const CurrencyContext = createContext<CurrencyContextValue | null>(null)
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [currency, setCurrency] = useState<Currency>('USD')
+  const [currency, setCurrency] = useState<string>('USD')
+  const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency }}>
+    <CurrencyContext.Provider
+      value={{
+        currency,
+        setCurrency,
+        currencyModalOpen,
+        setCurrencyModalOpen,
+      }}
+    >
       {children}
     </CurrencyContext.Provider>
   )

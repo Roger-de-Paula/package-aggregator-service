@@ -4,6 +4,7 @@ import com.example.packageaggregator.config.CacheConfig;
 import com.example.packageaggregator.client.dto.ExchangeRateResponse;
 import com.example.packageaggregator.exception.ExternalServiceUnavailableException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -44,6 +46,28 @@ public class ExchangeRateClient {
         } catch (Exception e) {
             log.error("Failed to fetch exchange rate for {}: {}", currency, e.getMessage());
             throw new ExternalServiceUnavailableException("Exchange rate service unavailable: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Fetches the list of supported currencies from Frankfurter (code -> name).
+     * Cached to avoid repeated calls.
+     */
+    @Cacheable(value = CacheConfig.CURRENCIES_CACHE, cacheManager = "exchangeRateCacheManager", key = "'all'")
+    public Map<String, String> getCurrencies() {
+        try {
+            Map<String, String> map = exchangeRateWebClient.get()
+                    .uri("/currencies")
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, String>>() {})
+                    .block();
+            return map != null ? map : Map.of();
+        } catch (WebClientResponseException e) {
+            log.error("Currencies API error: {}", e.getStatusCode());
+            throw new ExternalServiceUnavailableException("Currencies service unavailable: " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Failed to fetch currencies: {}", e.getMessage());
+            throw new ExternalServiceUnavailableException("Currencies service unavailable: " + e.getMessage(), e);
         }
     }
 }

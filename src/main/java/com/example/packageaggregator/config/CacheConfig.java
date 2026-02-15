@@ -16,6 +16,7 @@ public class CacheConfig {
 
     public static final String PRODUCT_CACHE = "products";
     public static final String EXCHANGE_RATE_CACHE = "exchangeRates";
+    public static final String CURRENCIES_CACHE = "currencies";
 
     @Primary
     @Bean
@@ -29,7 +30,7 @@ public class CacheConfig {
 
     @Bean("exchangeRateCacheManager")
     public CacheManager exchangeRateCacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager(EXCHANGE_RATE_CACHE);
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager(EXCHANGE_RATE_CACHE, CURRENCIES_CACHE);
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(100));

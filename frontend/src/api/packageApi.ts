@@ -51,3 +51,12 @@ export const fetchProducts = (currency = 'USD'): Promise<Product[]> =>
       headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
     })
     .then((r) => r.data)
+
+/** Fetch available currencies (from Frankfurter). Optional search filters by code or name. */
+export const fetchCurrencies = (search = ''): Promise<CurrencyOption[]> =>
+  api.get<CurrencyOption[]>('/currencies', { params: search ? { search } : {} }).then((r) => r.data)
+
+export interface CurrencyOption {
+  code: string
+  name: string
+}
