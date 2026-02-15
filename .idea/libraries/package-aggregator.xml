@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="package-aggregator">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/package-aggregator.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
