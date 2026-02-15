@@ -1,0 +1,19 @@
+# Git and IDE
+.git
+.gitignore
+.cursor
+.idea
+*.iml
+.vscode
+
+# Build outputs
+target/
+frontend/node_modules
+frontend/dist
+
+# Docs and misc
+README.md
+*.md
+Dockerfile*
+docker-compose*
+.dockerignore
