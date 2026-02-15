@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { fetchPackageById } from '../api/packageApi'
+import { useCurrency } from '../contexts/CurrencyContext'
 import type { PackageDetail as PackageDetailType } from '../types/api'
-
-const CURRENCIES = ['USD', 'EUR', 'GBP']
 
 export default function PackageDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [currency, setCurrency] = useState('USD')
+  const { currency } = useCurrency()
   const [pkg, setPkg] = useState<PackageDetailType | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -25,33 +24,64 @@ export default function PackageDetail() {
       .finally(() => setLoading(false))
   }, [id, currency])
 
-  if (loading && !pkg) return <p>Loading...</p>
-  if (error) return <p style={{ color: 'red' }}>Error: {error}</p>
+  if (loading && !pkg) {
+    return (
+      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+        Loading…
+      </div>
+    )
+  }
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-red-700 dark:text-red-300">
+        Error: {error}
+      </div>
+    )
+  }
   if (!pkg) return null
 
   return (
     <div>
-      <button type="button" onClick={() => navigate('/')} style={{ marginBottom: '1rem' }}>← Back to list</button>
-      <h1>{pkg.name}</h1>
-      {pkg.description && <p>{pkg.description}</p>}
-      <div style={{ marginBottom: '1rem' }}>
-        <label>Currency: </label>
-        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-          {CURRENCIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        className="mb-4 flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+      >
+        <span aria-hidden>←</span> Back to list
+      </button>
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden shadow-sm">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{pkg.name}</h1>
+          {pkg.description && (
+            <p className="mt-2 text-slate-600 dark:text-slate-400">{pkg.description}</p>
+          )}
+          <p className="mt-3 text-amber-600 dark:text-amber-400 font-semibold">
+            Total: {pkg.totalPrice} {pkg.currency}
+          </p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-500">
+            Created {new Date(pkg.createdAt).toLocaleString()}
+          </p>
+        </div>
+        <div className="p-6">
+          <h2 className="text-lg font-medium text-slate-800 dark:text-slate-200 mb-3">Products</h2>
+          <ul className="space-y-2">
+            {pkg.products?.map((prod, i) => (
+              <li
+                key={i}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 px-4 py-3 text-sm"
+              >
+                <span className="font-medium text-slate-900 dark:text-slate-100">
+                  {prod.productName}
+                </span>
+                <span className="text-slate-600 dark:text-slate-400">
+                  {prod.productPriceUsd} USD <span className="text-slate-400 dark:text-slate-500">(id: {prod.externalProductId})</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-      <p><strong>Total: {pkg.totalPrice} {pkg.currency}</strong></p>
-      <p style={{ color: '#666' }}>Created: {new Date(pkg.createdAt).toLocaleString()}</p>
-      <h2>Products</h2>
-      <ul>
-        {pkg.products?.map((prod, i) => (
-          <li key={i}>
-            {prod.productName} — {prod.productPriceUsd} USD (external id: {prod.externalProductId})
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }

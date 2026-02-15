@@ -32,43 +32,58 @@ export default function CreatePackage() {
 
   return (
     <div>
-      <h1>Create Package</h1>
-      <form onSubmit={handleSubmit} style={{ maxWidth: '400px' }}>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <label>Name *</label>
-          <br />
+      <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">Create Package</h1>
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-md rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-sm space-y-4"
+      >
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Name *
+          </label>
           <input
+            id="name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            style={{ width: '100%' }}
+            className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 dark:focus:ring-amber-400 outline-none transition-shadow"
           />
         </div>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <label>Description</label>
-          <br />
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Description
+          </label>
           <input
+            id="description"
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            style={{ width: '100%' }}
+            className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 dark:focus:ring-amber-400 outline-none transition-shadow"
           />
         </div>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <label>Product IDs (comma-separated, e.g. 1,2,3) *</label>
-          <br />
+        <div>
+          <label htmlFor="productIds" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Product IDs (comma-separated, e.g. 1,2,3) *
+          </label>
           <input
+            id="productIds"
             type="text"
             value={productIdsInput}
             onChange={(e) => setProductIdsInput(e.target.value)}
             placeholder="1,2,3"
-            style={{ width: '100%' }}
+            className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 placeholder-slate-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 dark:focus:ring-amber-400 outline-none transition-shadow"
           />
         </div>
-        {error && <p style={{ color: 'red', marginBottom: '0.5rem' }}>{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Creating...' : 'Create Package'}
+        {error && (
+          <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+        )}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-amber-500 hover:bg-amber-600 disabled:bg-amber-400 text-white font-medium py-2.5 transition-colors disabled:cursor-not-allowed"
+        >
+          {loading ? 'Creating…' : 'Create Package'}
         </button>
       </form>
     </div>
