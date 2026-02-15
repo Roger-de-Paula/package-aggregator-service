@@ -21,10 +21,11 @@ jobs:
           java-version: 11
           cache: maven
 
+      - name: Install Maven
+        run: sudo apt-get update && sudo apt-get install -y maven
+
       - name: Run tests
-        run: |
-          chmod +x mvnw
-          ./mvnw test -B
+        run: mvn test -B
 
   frontend-build:
     name: Frontend build
