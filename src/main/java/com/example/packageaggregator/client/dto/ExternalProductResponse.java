@@ -19,7 +19,8 @@ import java.math.BigDecimal;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExternalProductResponse {
 
-    private Long id;
+    /** External API uses string IDs (e.g. "VqKb4tyj9V6i"). */
+    private String id;
     private String name;
 
     @JsonProperty("usdPrice")

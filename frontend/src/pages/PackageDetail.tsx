@@ -14,14 +14,22 @@ export default function PackageDetail() {
 
   useEffect(() => {
     if (!id) return
+    let cancelled = false
     setLoading(true)
     setError(null)
     fetchPackageById(id, currency)
-      .then(setPkg)
-      .catch((err: { response?: { data?: { message?: string } }; message?: string }) =>
-        setError(err.response?.data?.message ?? err.message ?? 'Failed to load')
-      )
-      .finally(() => setLoading(false))
+      .then((data) => {
+        if (!cancelled) setPkg(data)
+      })
+      .catch((err: { response?: { data?: { message?: string } }; message?: string }) => {
+        if (!cancelled) setError(err.response?.data?.message ?? err.message ?? 'Failed to load')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [id, currency])
 
   if (loading && !pkg) {
@@ -75,7 +83,10 @@ export default function PackageDetail() {
                   {prod.productName}
                 </span>
                 <span className="text-slate-600 dark:text-slate-400">
-                  {prod.productPriceUsd} USD <span className="text-slate-400 dark:text-slate-500">(id: {prod.externalProductId})</span>
+                  {(prod.price ?? prod.productPriceUsd) != null
+                    ? `${Number(prod.price ?? prod.productPriceUsd)} ${prod.currency ?? 'USD'}`
+                    : '—'}{' '}
+                  <span className="text-slate-400 dark:text-slate-500">(id: {prod.externalProductId})</span>
                 </span>
               </li>
             ))}

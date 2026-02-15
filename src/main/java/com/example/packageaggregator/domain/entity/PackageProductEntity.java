@@ -33,8 +33,8 @@ public class PackageProductEntity {
     @JoinColumn(name = "package_id", nullable = false)
     private PackageEntity packageEntity;
 
-    @Column(nullable = false)
-    private Long externalProductId;
+    @Column(nullable = false, length = 64)
+    private String externalProductId;
 
     @Column(nullable = false)
     private String productName;

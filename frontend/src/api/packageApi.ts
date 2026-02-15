@@ -4,7 +4,8 @@ import type {
   PackageDetail,
   PageResponse,
   CreatePackageRequest,
-  UpdatePackageRequest
+  UpdatePackageRequest,
+  Product
 } from '../types/api'
 
 const api = axios.create({
@@ -23,7 +24,12 @@ export const fetchPackageById = (
   id: string,
   currency = 'USD'
 ): Promise<PackageDetail> =>
-  api.get(`/packages/${id}`, { params: { currency } }).then((r) => r.data)
+  api
+    .get<PackageDetail>(`/packages/${id}`, {
+      params: { currency },
+      headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+    })
+    .then((r) => r.data)
 
 export const createPackage = (body: CreatePackageRequest): Promise<PackageDetail> =>
   api.post('/packages', body).then((r) => r.data)
@@ -36,3 +42,12 @@ export const updatePackage = (
 
 export const deletePackage = (id: string): Promise<void> =>
   api.delete(`/packages/${id}`)
+
+/** Fetch product catalog for package builder (internal endpoint). Prices returned in the given currency. */
+export const fetchProducts = (currency = 'USD'): Promise<Product[]> =>
+  api
+    .get<Product[]>('/products', {
+      params: { currency },
+      headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+    })
+    .then((r) => r.data)

@@ -147,6 +147,7 @@ Tests mock `ProductClient` and `ExchangeRateClient` so they do not call real API
 
 | Method | Path | Description |
 |--------|------|-------------|
+| GET    | `/products` | **Internal.** Product catalog for the frontend (e.g. to build a package by selection). Returns list of `{ id, name, usdPrice }`. Cached. |
 | POST   | `/packages` | Create package (body: name, description, productIds). Snapshots products, stores in USD. |
 | GET    | `/packages` | List packages (paginated). Query: `page`, `size`, `currency` (default USD). |
 | GET    | `/packages/{id}` | Get one package. Query: `currency` (optional). |

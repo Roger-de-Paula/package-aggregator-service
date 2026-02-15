@@ -48,7 +48,7 @@ public class PackageService {
         List<PackageProductEntity> productEntities = new ArrayList<>();
         BigDecimal totalUsd = BigDecimal.ZERO;
 
-        for (Long productId : request.getProductIds()) {
+        for (String productId : request.getProductIds()) {
             ExternalProductResponse external = productClient.getProductById(productId);
             if (external == null || external.getUsdPrice() == null) {
                 throw new IllegalArgumentException("Invalid product data for id: " + productId);
@@ -125,18 +125,23 @@ public class PackageService {
     }
 
     private PackageResponseDto toResponseWithCurrency(PackageEntity entity, String currency) {
+        BigDecimal rate = getRateForCurrency(currency);
         BigDecimal convertedTotal = convertTotal(entity.getTotalPriceUsd(), currency);
-        return PackageMapper.toResponseDto(entity, convertedTotal, currency);
+        return PackageMapper.toResponseDto(entity, convertedTotal, currency, rate);
+    }
+
+    private BigDecimal getRateForCurrency(String currency) {
+        if (DEFAULT_CURRENCY.equalsIgnoreCase(currency)) {
+            return BigDecimal.ONE;
+        }
+        return exchangeRateClient.getRateUsdTo(currency);
     }
 
     private BigDecimal convertTotal(BigDecimal totalUsd, String currency) {
         if (totalUsd == null) {
             return BigDecimal.ZERO;
         }
-        if (DEFAULT_CURRENCY.equalsIgnoreCase(currency)) {
-            return totalUsd.setScale(2, RoundingMode.HALF_UP);
-        }
-        BigDecimal rate = exchangeRateClient.getRateUsdTo(currency);
+        BigDecimal rate = getRateForCurrency(currency);
         return totalUsd.multiply(rate).setScale(2, RoundingMode.HALF_UP);
     }
 }

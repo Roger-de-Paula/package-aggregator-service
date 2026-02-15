@@ -9,9 +9,13 @@ export interface PackageSummary {
 }
 
 export interface PackageProduct {
-  externalProductId: number
+  externalProductId: string
   productName: string
   productPriceUsd: number
+  /** Price in the response currency (when package was fetched with ?currency=). */
+  price?: number
+  /** Display currency (e.g. USD, EUR). */
+  currency?: string
 }
 
 /** Full package detail with products (PackageResponseDto) */
@@ -33,10 +37,22 @@ export interface PageResponse<T> {
 export interface CreatePackageRequest {
   name: string
   description?: string
-  productIds: number[]
+  productIds: string[]
 }
 
 export interface UpdatePackageRequest {
   name: string
   description?: string
+}
+
+/** Product from GET /products (catalog for building a package). price/currency match the requested currency. */
+export interface Product {
+  id: string
+  name: string
+  /** Price in the requested currency (from backend). */
+  price?: number
+  /** Display currency code (from backend). */
+  currency?: string
+  /** Legacy: backend may send usdPrice instead of price/currency. */
+  usdPrice?: number
 }

@@ -1,0 +1,4 @@
+com\example\packageaggregator\controller\ProductController.class
+com\example\packageaggregator\api\dto\ProductDto$ProductDtoBuilder.class
+com\example\packageaggregator\api\dto\ProductDto.class
+com\example\packageaggregator\client\ProductClient$1.class

@@ -25,5 +25,5 @@ public class CreatePackageRequest {
 
     @NotNull(message = "Product IDs are required")
     @NotEmpty(message = "At least one product is required")
-    private List<Long> productIds;
+    private List<String> productIds;
 }

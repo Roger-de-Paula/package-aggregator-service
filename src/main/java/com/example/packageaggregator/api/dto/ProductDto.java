@@ -8,17 +8,20 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+/**
+ * DTO for exposing product catalog to the frontend (e.g. for building a package by selection).
+ * price and currency reflect the requested display currency (from query param).
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PackageProductDto {
+public class ProductDto {
 
-    private String externalProductId;
-    private String productName;
-    private BigDecimal productPriceUsd;
-    /** Price in the response currency (when requesting package with ?currency=). */
+    private String id;
+    private String name;
+    /** Price in the requested currency (see currency). */
     private BigDecimal price;
     /** Display currency (e.g. USD, EUR). */
     private String currency;

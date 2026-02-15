@@ -39,18 +39,18 @@ class PackageControllerTests {
 
     @Test
     void createPackage() throws Exception {
-        when(productClient.getProductById(1L)).thenReturn(ExternalProductResponse.builder()
-                .id(1L)
+        when(productClient.getProductById("id-1")).thenReturn(ExternalProductResponse.builder()
+                .id("id-1")
                 .name("Product 1")
                 .usdPrice(new BigDecimal("10.00"))
                 .build());
-        when(productClient.getProductById(2L)).thenReturn(ExternalProductResponse.builder()
-                .id(2L)
+        when(productClient.getProductById("id-2")).thenReturn(ExternalProductResponse.builder()
+                .id("id-2")
                 .name("Product 2")
                 .usdPrice(new BigDecimal("20.00"))
                 .build());
 
-        String body = "{\"name\":\"Starter Pack\",\"description\":\"Basic bundle\",\"productIds\":[1,2]}";
+        String body = "{\"name\":\"Starter Pack\",\"description\":\"Basic bundle\",\"productIds\":[\"id-1\",\"id-2\"]}";
         mockMvc.perform(post("/packages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))

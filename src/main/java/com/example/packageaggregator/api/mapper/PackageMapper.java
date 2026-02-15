@@ -9,6 +9,7 @@ import com.example.packageaggregator.domain.entity.PackageProductEntity;
 import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,7 @@ public final class PackageMapper {
                 .build();
     }
 
-    public static PackageResponseDto toResponseDto(PackageEntity entity, BigDecimal totalPriceInCurrency, String currency) {
+    public static PackageResponseDto toResponseDto(PackageEntity entity, BigDecimal totalPriceInCurrency, String currency, BigDecimal rateUsdToCurrency) {
         return PackageResponseDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())
@@ -36,24 +37,29 @@ public final class PackageMapper {
                 .totalPrice(totalPriceInCurrency)
                 .currency(currency)
                 .createdAt(entity.getCreatedAt())
-                .products(toProductDtos(entity.getProducts()))
+                .products(toProductDtos(entity.getProducts(), rateUsdToCurrency, currency))
                 .build();
     }
 
-    public static List<PackageProductDto> toProductDtos(List<PackageProductEntity> products) {
+    public static List<PackageProductDto> toProductDtos(List<PackageProductEntity> products, BigDecimal rateUsdToCurrency, String currency) {
         if (products == null) {
             return List.of();
         }
         return products.stream()
-                .map(PackageMapper::toProductDto)
+                .map(p -> toProductDto(p, rateUsdToCurrency, currency))
                 .collect(Collectors.toList());
     }
 
-    public static PackageProductDto toProductDto(PackageProductEntity entity) {
+    public static PackageProductDto toProductDto(PackageProductEntity entity, BigDecimal rateUsdToCurrency, String currency) {
+        BigDecimal priceInCurrency = entity.getProductPriceUsd() != null
+                ? entity.getProductPriceUsd().multiply(rateUsdToCurrency).setScale(2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
         return PackageProductDto.builder()
                 .externalProductId(entity.getExternalProductId())
                 .productName(entity.getProductName())
                 .productPriceUsd(entity.getProductPriceUsd())
+                .price(priceInCurrency)
+                .currency(currency)
                 .build();
     }
 
